@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, HttpStatus, HttpCode } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
@@ -12,50 +12,98 @@ export class AdminController {
   constructor(private readonly adminService: AdminService) { }
 
   @Post('register')
-  async create(@Body() createAdminDto: CreateAdminDto): Promise<AdminResponseDto> {
-    return this.adminService.create(createAdminDto);
+  @HttpCode(HttpStatus.CREATED)
+  async create(@Body() createAdminDto: CreateAdminDto): Promise<{ statusCode: number; message: string; data: AdminResponseDto }> {
+    const admin = await this.adminService.create(createAdminDto);
+    return {
+      statusCode: HttpStatus.CREATED,
+      message: 'Admin created successfully',
+      data: admin
+    };
   }
 
   @Post('login')
-  async login(@Body() loginAdminDto: LoginAdminDto): Promise<{ admin: AdminResponseDto; token: string }> {
-    return this.adminService.login(loginAdminDto);
+  @HttpCode(HttpStatus.OK)
+  async login(@Body() loginAdminDto: LoginAdminDto): Promise<{ statusCode: number; message: string; data: { admin: AdminResponseDto; token: string } }> {
+    const result = await this.adminService.login(loginAdminDto);
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Login successful',
+      data: result
+    };
   }
 
-  @UseGuards(AdminJwtAuthGuard)
+  //  @UseGuards(AdminJwtAuthGuard)
   @Get()
-  async findAll(): Promise<AdminResponseDto[]> {
-    return this.adminService.findAll();
+  @HttpCode(HttpStatus.OK)
+  async findAll(): Promise<{ statusCode: number; message: string; data: AdminResponseDto[] }> {
+    const admins = await this.adminService.findAll();
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Admins retrieved successfully',
+      data: admins
+    };
   }
 
-  @UseGuards(AdminJwtAuthGuard)
+  // @UseGuards(AdminJwtAuthGuard)
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<AdminResponseDto> {
-    return this.adminService.findOne(+id);
+  @HttpCode(HttpStatus.OK)
+  async findOne(@Param('id') id: string): Promise<{ statusCode: number; message: string; data: AdminResponseDto }> {
+    const admin = await this.adminService.findOne(+id);
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Admin retrieved successfully',
+      data: admin
+    };
   }
 
-  @UseGuards(AdminJwtAuthGuard)
+  // @UseGuards(AdminJwtAuthGuard)
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() updateAdminDto: UpdateAdminDto): Promise<AdminResponseDto> {
-    return this.adminService.update(+id, updateAdminDto);
+  @HttpCode(HttpStatus.OK)
+  async update(@Param('id') id: string, @Body() updateAdminDto: UpdateAdminDto): Promise<{ statusCode: number; message: string; data: AdminResponseDto }> {
+    const admin = await this.adminService.update(+id, updateAdminDto);
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Admin updated successfully',
+      data: admin
+    };
   }
 
-  @UseGuards(AdminJwtAuthGuard)
+  // @UseGuards(AdminJwtAuthGuard)
   @Delete(':id')
-  async remove(@Param('id') id: string): Promise<{ message: string }> {
+  @HttpCode(HttpStatus.OK)
+  async remove(@Param('id') id: string): Promise<{ statusCode: number; message: string }> {
     await this.adminService.remove(+id);
-    return { message: 'Admin deleted successfully' };
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Admin deleted successfully'
+    };
   }
 
-  @UseGuards(AdminJwtAuthGuard)
-  @Patch('/deactivate/:id')
-  async deactivate(@Param('id') id: string): Promise<AdminResponseDto> {
-    return this.adminService.deactivate(+id);
+  // @UseGuards(AdminJwtAuthGuard)
+  @Patch(':id/deactivate')
+  @HttpCode(HttpStatus.OK)
+  async deactivate(@Param('id') id: string): Promise<{ statusCode: number; message: string; data: AdminResponseDto }> {
+    const admin = await this.adminService.deactivate(+id);
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Admin deactivated successfully',
+      data: admin
+    };
   }
 
-  @UseGuards(AdminJwtAuthGuard)
-  @Patch('/activate/:id')
-  async activate(@Param('id') id: string): Promise<AdminResponseDto> {
-    return this.adminService.activate(+id);
+  // @UseGuards(AdminJwtAuthGuard)
+  @Patch(':id/activate')
+  @HttpCode(HttpStatus.OK)
+  async activate(@Param('id') id: string): Promise<{ statusCode: number; message: string; data: AdminResponseDto }> {
+    const admin = await this.adminService.activate(+id);
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Admin activated successfully',
+      data: admin
+    };
   }
+
+
 
 }

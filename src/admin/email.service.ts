@@ -6,20 +6,20 @@ export class EmailService {
     private transporter: nodemailer.Transporter;
 
     constructor() {
-        this.transporter = nodemailer.createTransporter({
-            host: process.env.SMTP_HOST || 'smtp.gmail.com',
-            port: parseInt(process.env.SMTP_PORT) || 587,
+        this.transporter = nodemailer.createTransport({
+            host: process.env.MAIL_HOST || 'smtp.gmail.com',
+            port: parseInt(process.env.MAIL_PORT || '465'),
             secure: false,
             auth: {
-                user: process.env.SMTP_USER,
-                pass: process.env.SMTP_PASS,
+                user: process.env.MAIL_USERNAME || '',
+                pass: process.env.MAIL_PASSWORD || '',
             },
         });
     }
 
     async sendWelcomeEmail(email: string, name: string, password: string): Promise<void> {
         const mailOptions = {
-            from: process.env.SMTP_USER,
+            from: process.env.MAIL_USERNAME || 'noreply@nextbyte.com',
             to: email,
             subject: 'Welcome to NextByte - Your Admin Account Created',
             html: `

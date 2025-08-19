@@ -186,4 +186,21 @@ export class AdminService {
     return adminWithoutPassword as AdminResponseDto;
   }
 
+  async findByRole(role: AdminRole): Promise<AdminResponseDto[]> {
+    const admins = await this.adminRepository.find({
+      where: { role },
+      select: ['id', 'name', 'email', 'bio', 'designation', 'experience', 'fbLink', 'linkedinLink', 'instaLink', 'expertise', 'salary', 'jobType', 'photoUrl', 'role', 'isActive', 'createdAt', 'updatedAt']
+    });
+
+    return admins as AdminResponseDto[];
+  }
+
+  async findByJobType(jobType: JobType): Promise<AdminResponseDto[]> {
+    const admins = await this.adminRepository.find({
+      where: { jobType },
+      select: ['id', 'name', 'email', 'bio', 'designation', 'experience', 'fbLink', 'linkedinLink', 'instaLink', 'expertise', 'salary', 'jobType', 'photoUrl', 'role', 'isActive', 'createdAt', 'updatedAt']
+    });
+
+    return admins as AdminResponseDto[];
+  }
 }
