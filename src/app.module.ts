@@ -5,7 +5,17 @@ import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from './users/users.module';
 import { AdminModule } from './admin/admin.module';
-
+import { CategorisModule } from './categoris/categoris.module';
+import { CourseModule } from './course/course.module';
+import { ModuleModule } from './module/module.module';
+import { AssignmentModule } from './assignment/assignment.module';
+import { ReviewModule } from './review/review.module';
+import { EnrollmentModule } from './enrollment/enrollment.module';
+import { PaymentModule } from './payment/payment.module';
+import { LessonsModule } from './lessons/lessons.module';
+import { AssignmentSubmissionsModule } from './assignment-submissions/assignment-submissions.module';
+import { NotificationModule } from './notification/notification.module';
+import { StatisticsModule } from './statistics/statistics.module';
 
 @Module({
   imports: [
@@ -27,35 +37,18 @@ import { AdminModule } from './admin/admin.module';
     }),
 
     UsersModule,
-
     AdminModule,
-
-
-    // MailerModule.forRootAsync({
-    //   imports: [ConfigModule],
-    //   useFactory: async (configService: ConfigService) => ({
-    //     transport: {
-    //       service: 'gmail',
-    //       auth: {
-    //         user: 'aimspurified@gmail.com',
-    //         pass: 'oxcs lnyq twnf exyz',
-    //       },
-    //     },
-    //     defaults: {
-    //       from: 'aimspurified@gmail.com',
-    //     },
-    //     template: {
-    //       dir: join(__dirname, 'templates/email'),
-    //       adapter: new HandlebarsAdapter(),
-    //       options: {
-    //         strict: true,
-    //       },
-    //     },
-    //   }),
-    //   inject: [ConfigService],
-    // }),
-
-
+    CategorisModule,
+    CourseModule,
+    ModuleModule,
+    AssignmentModule,
+    ReviewModule,
+    EnrollmentModule,
+    PaymentModule,
+    LessonsModule,
+    AssignmentSubmissionsModule,
+    NotificationModule,
+    StatisticsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

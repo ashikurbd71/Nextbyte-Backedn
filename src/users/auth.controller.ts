@@ -1,16 +1,23 @@
 import { Controller, Post, Body, UseGuards, Request, Put } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { UsersService } from './users.service';
 import { LoginDto } from './dto/login.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { ResendOtpDto } from './dto/resend-otp.dto';
-
+import { CreateUserDto } from './dto/create-user.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
 
 @Controller('auth')
 export class AuthController {
     constructor(
         private readonly authService: AuthService,
+        private readonly usersService: UsersService,
     ) { }
+
+    @Post('register')
+    async register(@Body() createUserDto: CreateUserDto) {
+        return this.authService.register(createUserDto);
+    }
 
     @Post('login')
     async login(@Body() loginDto: LoginDto) {
@@ -26,6 +33,4 @@ export class AuthController {
     async resendOtp(@Body() resendOtpDto: ResendOtpDto) {
         return this.authService.resendOtp(resendOtpDto);
     }
-
-
 }

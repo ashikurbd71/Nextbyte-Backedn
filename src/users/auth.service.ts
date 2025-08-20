@@ -6,6 +6,8 @@ import { User } from './entities/user.entity';
 import { LoginDto } from './dto/login.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { ResendOtpDto } from './dto/resend-otp.dto';
+import { CreateUserDto } from './dto/create-user.dto';
+import { EmailService } from '../admin/email.service';
 import axios from 'axios';
 
 @Injectable()
@@ -14,6 +16,7 @@ export class AuthService {
         @InjectRepository(User)
         private userRepository: Repository<User>,
         private jwtService: JwtService,
+        private emailService: EmailService,
     ) { }
 
     async generateOtp(): Promise<string> {
@@ -31,7 +34,7 @@ export class AuthService {
                 api_key: apiKey,
                 type: 'text',
                 contacts: phone,
-                senderid: 'NextByte',
+                senderid: '8809617625025',
                 msg: `Your NextByte Academy verification code is: ${otp}. Valid for 5 minutes.`,
             });
 
@@ -41,6 +44,69 @@ export class AuthService {
             // In development, just log the OTP
             console.log(`Development OTP for ${phone}: ${otp}`);
         }
+    }
+
+    async register(createUserDto: CreateUserDto) {
+        // Check if user with phone already exists
+        const existingUser = await this.userRepository.findOne({
+            where: { phone: createUserDto.phone }
+        });
+
+        if (existingUser) {
+            throw new BadRequestException('User with this phone number already exists');
+        }
+
+        // Check if email is provided and unique
+        if (createUserDto.email) {
+            const existingEmail = await this.userRepository.findOne({
+                where: { email: createUserDto.email }
+            });
+
+            if (existingEmail) {
+                throw new BadRequestException('User with this email already exists');
+            }
+        }
+
+        // Create user
+        const user = this.userRepository.create(createUserDto);
+        const savedUser = await this.userRepository.save(user);
+
+        // Send welcome email if email is provided
+        if (createUserDto.email) {
+            try {
+                await this.emailService.sendWelcomeEmail(
+                    createUserDto.email,
+                    createUserDto.name
+                );
+            } catch (error) {
+                console.error('Failed to send welcome email:', error);
+                // Don't throw error, continue with user creation
+            }
+        }
+
+        // Generate OTP for phone verification
+        const otp = await this.generateOtp();
+        const otpExpiry = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+
+        // Update user with OTP
+        savedUser.lastOtp = otp;
+        savedUser.otpExpiry = otpExpiry;
+        await this.userRepository.save(savedUser);
+
+        // Send OTP via SMS
+        await this.sendSms(createUserDto.phone, otp);
+
+        return {
+            message: 'User registered successfully. Please verify your phone number with the OTP sent.',
+            user: {
+                id: savedUser.id,
+                name: savedUser.name,
+                phone: savedUser.phone,
+                email: savedUser.email,
+                isVerified: savedUser.isVerified,
+            },
+            phone: createUserDto.phone,
+        };
     }
 
     async login(loginDto: LoginDto) {

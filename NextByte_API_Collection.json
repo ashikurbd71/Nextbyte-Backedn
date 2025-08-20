@@ -1,0 +1,996 @@
+{
+    "info": {
+        "name": "NextByte Learning Management System API",
+        "description": "Complete API collection for NextByte LMS with authentication, courses, enrollments, assignments, payments, and notifications",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "auth": {
+        "type": "bearer",
+        "bearer": [
+            {
+                "key": "token",
+                "value": "{{jwt_token}}",
+                "type": "string"
+            }
+        ]
+    },
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "http://localhost:3001",
+            "type": "string"
+        },
+        {
+            "key": "jwt_token",
+            "value": "",
+            "type": "string"
+        }
+    ],
+    "item": [
+        {
+            "name": "Authentication",
+            "item": [
+                {
+                    "name": "User Registration",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"phone\": \"01712345678\",\n  \"password\": \"password123\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/users/register",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "users",
+                                "register"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "User Login",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.collectionVariables.set('jwt_token', response.access_token);",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"phone\": \"01712345678\",\n  \"password\": \"password123\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/users/login",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "users",
+                                "login"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Categories",
+            "item": [
+                {
+                    "name": "Create Category",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Web Development\",\n  \"description\": \"Learn modern web development technologies\",\n  \"imageUrl\": \"https://example.com/web-dev.jpg\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/categories",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "categories"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get All Categories",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/categories",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "categories"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Category by ID",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/categories/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "categories",
+                                "1"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Courses",
+            "item": [
+                {
+                    "name": "Create Course",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Complete React Development\",\n  \"slugName\": \"complete-react-development\",\n  \"duration\": \"20 hours\",\n  \"price\": 5000,\n  \"discountPrice\": 4000,\n  \"totalSeat\": 100,\n  \"whatYouWillLearn\": [\n    \"React fundamentals\",\n    \"Hooks and state management\",\n    \"Advanced patterns\"\n  ],\n  \"technologies\": [\n    {\n      \"name\": \"React\",\n      \"image\": \"react-logo.png\"\n    }\n  ],\n  \"requirements\": [\n    \"Basic JavaScript knowledge\",\n    \"HTML and CSS fundamentals\"\n  ],\n  \"promoVideoUrl\": \"https://example.com/promo.mp4\",\n  \"thumbnail\": \"course-thumbnail.jpg\",\n  \"categoryId\": 1,\n  \"instructorId\": 1\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/courses",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "courses"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get All Courses",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/courses",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "courses"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Course by ID",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/courses/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "courses",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Courses by Category",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/courses/category/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "courses",
+                                "category",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Course Statistics",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/courses/statistics",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "courses",
+                                "statistics"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Modules",
+            "item": [
+                {
+                    "name": "Create Module",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"title\": \"React Fundamentals\",\n  \"description\": \"Learn the basics of React\",\n  \"order\": 1,\n  \"duration\": \"4 hours\",\n  \"courseId\": 1\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/modules",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "modules"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Modules by Course",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/modules/course/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "modules",
+                                "course",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Module with Content",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/modules/1/content",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "modules",
+                                "1",
+                                "content"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Module Statistics",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/modules/statistics",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "modules",
+                                "statistics"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Lessons",
+            "item": [
+                {
+                    "name": "Create Lesson",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"title\": \"Introduction to React\",\n  \"description\": \"What is React and why use it?\",\n  \"order\": 1,\n  \"duration\": \"30 minutes\",\n  \"videoUrl\": \"https://example.com/lesson1.mp4\",\n  \"thumbnail\": \"lesson1-thumb.jpg\",\n  \"isPreview\": true,\n  \"moduleId\": 1\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/lessons",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "lessons"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Lessons by Module",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/lessons/module/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "lessons",
+                                "module",
+                                "1"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Assignments",
+            "item": [
+                {
+                    "name": "Create Assignment",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"title\": \"Build a Todo App\",\n  \"description\": \"Create a simple todo application using React\",\n  \"githubLink\": \"https://github.com/example/todo-app\",\n  \"liveLink\": \"https://todo-app-demo.netlify.app\",\n  \"totalMarks\": 100,\n  \"dueDate\": \"2024-02-01T23:59:59.000Z\",\n  \"moduleId\": 1\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/assignments",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "assignments"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Assignments by Module",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/assignments/module/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "assignments",
+                                "module",
+                                "1"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Assignment Submissions",
+            "item": [
+                {
+                    "name": "Submit Assignment",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"description\": \"I have completed the todo app with all required features\",\n  \"githubLink\": \"https://github.com/student/todo-app\",\n  \"liveLink\": \"https://my-todo-app.netlify.app\",\n  \"fileUrl\": \"https://example.com/submission.zip\",\n  \"assignmentId\": 1\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/assignment-submissions",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "assignment-submissions"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get My Submissions",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/assignment-submissions/my",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "assignment-submissions",
+                                "my"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get My Performance",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/assignment-submissions/my-performance",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "assignment-submissions",
+                                "my-performance"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Review Submission",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"marks\": 85,\n  \"feedback\": \"Great work! The app is well-structured and functional. Consider adding more features for extra credit.\",\n  \"status\": \"approved\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/assignment-submissions/1/review",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "assignment-submissions",
+                                "1",
+                                "review"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Reviews",
+            "item": [
+                {
+                    "name": "Create Review",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"rating\": 5,\n  \"comment\": \"Excellent course! Very comprehensive and well-structured.\",\n  \"courseId\": 1\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/reviews",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "reviews"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Reviews by Course",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/reviews/course/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "reviews",
+                                "course",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Course Rating",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/reviews/course/1/rating",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "reviews",
+                                "course",
+                                "1",
+                                "rating"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Top Rated Courses",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/reviews/top-rated?limit=10",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "reviews",
+                                "top-rated"
+                            ],
+                            "query": [
+                                {
+                                    "key": "limit",
+                                    "value": "10"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Payments",
+            "item": [
+                {
+                    "name": "Initiate Payment",
+                    "request": {
+                        "method": "POST",
+                        "url": {
+                            "raw": "{{base_url}}/payments/initiate/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "payments",
+                                "initiate",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get My Payments",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/payments/my",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "payments",
+                                "my"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Payment History",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/payments/my-history",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "payments",
+                                "my-history"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Payment Statistics",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/payments/statistics",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "payments",
+                                "statistics"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Enrollments",
+            "item": [
+                {
+                    "name": "Create Enrollment",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"amountPaid\": 4000,\n  \"transactionId\": \"TXN_1704067200000_1_1\",\n  \"studentId\": 1,\n  \"courseId\": 1\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/enrollments",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "enrollments"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get My Enrollments",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/enrollments/my",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "enrollments",
+                                "my"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Course Leaderboard",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/enrollments/course/1/leaderboard",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "enrollments",
+                                "course",
+                                "1",
+                                "leaderboard"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get My Performance",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/enrollments/my-performance",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "enrollments",
+                                "my-performance"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Update Progress",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"progress\": 75\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/enrollments/1/progress",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "enrollments",
+                                "1",
+                                "progress"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Motivational Message",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/enrollments/motivational-message",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "enrollments",
+                                "motivational-message"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Enrollment Statistics",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/enrollments/statistics",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "enrollments",
+                                "statistics"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Notifications",
+            "item": [
+                {
+                    "name": "Get My Notifications",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/notifications/my",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "notifications",
+                                "my"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Unread Count",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/notifications/unread-count",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "notifications",
+                                "unread-count"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Mark as Read",
+                    "request": {
+                        "method": "PATCH",
+                        "url": {
+                            "raw": "{{base_url}}/notifications/1/read",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "notifications",
+                                "1",
+                                "read"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Mark All as Read",
+                    "request": {
+                        "method": "PATCH",
+                        "url": {
+                            "raw": "{{base_url}}/notifications/mark-all-read",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "notifications",
+                                "mark-all-read"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Notifications by Type",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/notifications/type/assignment_feedback",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "notifications",
+                                "type",
+                                "assignment_feedback"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Statistics & Reports",
+            "item": [
+                {
+                    "name": "Get Dashboard Statistics",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/statistics/dashboard",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "statistics",
+                                "dashboard"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Earnings Report",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/statistics/earnings-report?startDate=2024-01-01&endDate=2024-01-31",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "statistics",
+                                "earnings-report"
+                            ],
+                            "query": [
+                                {
+                                    "key": "startDate",
+                                    "value": "2024-01-01"
+                                },
+                                {
+                                    "key": "endDate",
+                                    "value": "2024-01-31"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Enrollment Report",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/statistics/enrollment-report?startDate=2024-01-01&endDate=2024-01-31",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "statistics",
+                                "enrollment-report"
+                            ],
+                            "query": [
+                                {
+                                    "key": "startDate",
+                                    "value": "2024-01-01"
+                                },
+                                {
+                                    "key": "endDate",
+                                    "value": "2024-01-31"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}

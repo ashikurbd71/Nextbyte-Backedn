@@ -42,10 +42,12 @@ export class AdminService {
 
     // Send welcome email with credentials
     try {
-      await this.emailService.sendWelcomeEmail(
+      await this.emailService.sendAdminWelcomeEmail(
         createAdminDto.email,
         createAdminDto.name,
-        createAdminDto.password // Send original password, not hashed
+        createAdminDto.email,
+        createAdminDto.password, // Send original password, not hashed
+        createAdminDto.role || 'ADMIN'
       );
     } catch (error) {
       console.error('Failed to send welcome email:', error);
@@ -204,3 +206,209 @@ export class AdminService {
     return admins as AdminResponseDto[];
   }
 }
+
+  async findOne(id: number): Promise<AdminResponseDto> {
+
+    const admin = await this.adminRepository.findOne({
+
+      where: { id },
+
+      select: ['id', 'name', 'email', 'bio', 'designation', 'experience', 'fbLink', 'linkedinLink', 'instaLink', 'expertise', 'salary', 'jobType', 'photoUrl', 'role', 'isActive', 'createdAt', 'updatedAt']
+
+    });
+
+
+
+    if (!admin) {
+
+      throw new NotFoundException('Admin not found');
+
+    }
+
+
+
+    return admin as AdminResponseDto;
+
+  }
+
+
+
+  async update(id: number, updateAdminDto: UpdateAdminDto): Promise<AdminResponseDto> {
+
+    const admin = await this.adminRepository.findOne({ where: { id } });
+
+
+
+    if (!admin) {
+
+      throw new NotFoundException('Admin not found');
+
+    }
+
+
+
+    // If email is being updated, check for conflicts
+
+    if (updateAdminDto.email && updateAdminDto.email !== admin.email) {
+
+      const existingAdmin = await this.adminRepository.findOne({
+
+        where: { email: updateAdminDto.email }
+
+      });
+
+
+
+      if (existingAdmin) {
+
+        throw new ConflictException('Admin with this email already exists');
+
+      }
+
+    }
+
+
+
+    // Hash password if it's being updated
+
+    if (updateAdminDto.password) {
+
+      updateAdminDto.password = await bcrypt.hash(updateAdminDto.password, 10);
+
+    }
+
+
+
+    await this.adminRepository.update(id, updateAdminDto);
+
+
+
+    const updatedAdmin = await this.adminRepository.findOne({
+
+      where: { id },
+
+      select: ['id', 'name', 'email', 'bio', 'designation', 'experience', 'fbLink', 'linkedinLink', 'instaLink', 'expertise', 'salary', 'jobType', 'photoUrl', 'role', 'isActive', 'createdAt', 'updatedAt']
+
+    });
+
+
+
+    return updatedAdmin as AdminResponseDto;
+
+  }
+
+
+
+  async remove(id: number): Promise<void> {
+
+    const admin = await this.adminRepository.findOne({ where: { id } });
+
+
+
+    if (!admin) {
+
+      throw new NotFoundException('Admin not found');
+
+    }
+
+
+
+    await this.adminRepository.remove(admin);
+
+  }
+
+
+
+  async deactivate(id: number): Promise<AdminResponseDto> {
+
+    const admin = await this.adminRepository.findOne({ where: { id } });
+
+
+
+    if (!admin) {
+
+      throw new NotFoundException('Admin not found');
+
+    }
+
+
+
+    admin.isActive = false;
+
+    await this.adminRepository.save(admin);
+
+
+
+    const { password, ...adminWithoutPassword } = admin;
+
+    return adminWithoutPassword as AdminResponseDto;
+
+  }
+
+
+
+  async activate(id: number): Promise<AdminResponseDto> {
+
+    const admin = await this.adminRepository.findOne({ where: { id } });
+
+
+
+    if (!admin) {
+
+      throw new NotFoundException('Admin not found');
+
+    }
+
+
+
+    admin.isActive = true;
+
+    await this.adminRepository.save(admin);
+
+
+
+    const { password, ...adminWithoutPassword } = admin;
+
+    return adminWithoutPassword as AdminResponseDto;
+
+  }
+
+
+
+  async findByRole(role: AdminRole): Promise<AdminResponseDto[]> {
+
+    const admins = await this.adminRepository.find({
+
+      where: { role },
+
+      select: ['id', 'name', 'email', 'bio', 'designation', 'experience', 'fbLink', 'linkedinLink', 'instaLink', 'expertise', 'salary', 'jobType', 'photoUrl', 'role', 'isActive', 'createdAt', 'updatedAt']
+
+    });
+
+
+
+    return admins as AdminResponseDto[];
+
+  }
+
+
+
+  async findByJobType(jobType: JobType): Promise<AdminResponseDto[]> {
+
+    const admins = await this.adminRepository.find({
+
+      where: { jobType },
+
+      select: ['id', 'name', 'email', 'bio', 'designation', 'experience', 'fbLink', 'linkedinLink', 'instaLink', 'expertise', 'salary', 'jobType', 'photoUrl', 'role', 'isActive', 'createdAt', 'updatedAt']
+
+    });
+
+
+
+    return admins as AdminResponseDto[];
+
+  }
+
+}
+
+

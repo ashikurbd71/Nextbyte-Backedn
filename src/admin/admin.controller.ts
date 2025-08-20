@@ -81,7 +81,7 @@ export class AdminController {
   }
 
   // @UseGuards(AdminJwtAuthGuard)
-  @Patch(':id/deactivate')
+  @Patch('/deactivate/:id')
   @HttpCode(HttpStatus.OK)
   async deactivate(@Param('id') id: string): Promise<{ statusCode: number; message: string; data: AdminResponseDto }> {
     const admin = await this.adminService.deactivate(+id);
@@ -93,7 +93,7 @@ export class AdminController {
   }
 
   // @UseGuards(AdminJwtAuthGuard)
-  @Patch(':id/activate')
+  @Patch('/activate/:id')
   @HttpCode(HttpStatus.OK)
   async activate(@Param('id') id: string): Promise<{ statusCode: number; message: string; data: AdminResponseDto }> {
     const admin = await this.adminService.activate(+id);
