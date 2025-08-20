@@ -16,6 +16,7 @@ import { LessonsModule } from './lessons/lessons.module';
 import { AssignmentSubmissionsModule } from './assignment-submissions/assignment-submissions.module';
 import { NotificationModule } from './notification/notification.module';
 import { StatisticsModule } from './statistics/statistics.module';
+import { CertificateModule } from './certificate/certificate.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { StatisticsModule } from './statistics/statistics.module';
     AssignmentSubmissionsModule,
     NotificationModule,
     StatisticsModule,
+    CertificateModule,
   ],
   controllers: [AppController],
   providers: [AppService],
