@@ -76,7 +76,7 @@ export class AuthService {
             try {
                 await this.emailService.sendWelcomeEmail(
                     createUserDto.email,
-                    createUserDto.name
+                    createUserDto.name || 'User'
                 );
             } catch (error) {
                 console.error('Failed to send welcome email:', error);

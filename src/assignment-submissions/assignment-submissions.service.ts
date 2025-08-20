@@ -4,8 +4,9 @@ import { Repository } from 'typeorm';
 import { AssignmentSubmission, SubmissionStatus } from './entities/assignment-submission.entity';
 import { CreateAssignmentSubmissionDto } from './dto/create-assignment-submission.dto';
 import { UpdateAssignmentSubmissionDto } from './dto/update-assignment-submission.dto';
-import { ReviewSubmissionDto } from './dto/review-submission.dto';
+
 import { NotificationService } from '../notification/notification.service';
+import { ReviewSubmissionDto } from './dto/review-submission.dto';
 
 @Injectable()
 export class AssignmentSubmissionsService {
@@ -85,7 +86,7 @@ export class AssignmentSubmissionsService {
         const submission = await this.findOne(id);
 
         submission.marks = reviewDto.marks;
-        submission.feedback = reviewDto.feedback;
+        submission.feedback = reviewDto.feedback || '';
         submission.status = reviewDto.status;
         submission.reviewedAt = new Date();
 
@@ -96,7 +97,7 @@ export class AssignmentSubmissionsService {
             submission.student.id,
             submission.assignment.title,
             reviewDto.marks,
-            reviewDto.feedback,
+            reviewDto.feedback || '',
             submission.assignment.module.title
         );
 

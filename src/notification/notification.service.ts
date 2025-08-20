@@ -180,6 +180,27 @@ export class NotificationService {
     return savedNotification;
   }
 
+  async createCertificateGeneratedNotification(
+    studentId: number,
+    courseName: string
+  ): Promise<Notification> {
+    const notification = this.notificationRepository.create({
+      title: 'Certificate Generated!',
+      message: `Your certificate for "${courseName}" has been automatically generated and is ready for download. Congratulations on your achievement!`,
+      type: NotificationType.CERTIFICATE_GENERATED,
+      recipient: { id: studentId },
+      metadata: {
+        courseName,
+        certificateGenerated: true
+      }
+    });
+
+    const savedNotification = await this.notificationRepository.save(notification);
+    await this.sendNotificationEmail(savedNotification);
+
+    return savedNotification;
+  }
+
   async createPaymentSuccessNotification(
     studentId: number,
     courseName: string,
@@ -319,6 +340,14 @@ export class NotificationService {
           <div style="text-align: center; margin: 20px 0;">
             <a href="${baseUrl}/courses" style="background-color: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
               Start Learning
+            </a>
+          </div>
+        `;
+      case NotificationType.CERTIFICATE_GENERATED:
+        return `
+          <div style="text-align: center; margin: 20px 0;">
+            <a href="${baseUrl}/certificates" style="background-color: #ffc107; color: #212529; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+              View Certificate
             </a>
           </div>
         `;

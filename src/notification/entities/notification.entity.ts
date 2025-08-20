@@ -13,6 +13,7 @@ export enum NotificationType {
     ASSIGNMENT_SUBMITTED = 'assignment_submitted',
     COURSE_ENROLLMENT = 'course_enrollment',
     COURSE_COMPLETED = 'course_completed',
+    CERTIFICATE_GENERATED = 'certificate_generated',
     PAYMENT_SUCCESS = 'payment_success',
     PAYMENT_FAILED = 'payment_failed',
     GENERAL = 'general'

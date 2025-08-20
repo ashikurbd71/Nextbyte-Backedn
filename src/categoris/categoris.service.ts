@@ -3,13 +3,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateCategorisDto } from './dto/create-categoris.dto';
 import { UpdateCategorisDto } from './dto/update-categoris.dto';
-import { Categoris } from './entities/categoris.entity';
+import { Category } from './entities/categoris.entity';
+
 
 @Injectable()
 export class CategorisService {
   constructor(
-    @InjectRepository(Categoris)
-    private categorisRepository: Repository<Categoris>,
+    @InjectRepository(Category)
+    private categorisRepository: Repository<Category>,
   ) { }
 
   async create(createCategorisDto: CreateCategorisDto) {

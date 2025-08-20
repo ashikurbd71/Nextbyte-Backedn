@@ -6,12 +6,14 @@ import { Enrollment } from './entities/enrollment.entity';
 import { AssignmentSubmission } from '../assignment-submissions/entities/assignment-submission.entity';
 import { NotificationModule } from '../notification/notification.module';
 import { PaymentModule } from '../payment/payment.module';
+import { CertificateModule } from '../certificate/certificate.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Enrollment, AssignmentSubmission]),
     NotificationModule,
-    PaymentModule
+    PaymentModule,
+    CertificateModule
   ],
   controllers: [EnrollmentController],
   providers: [EnrollmentService],

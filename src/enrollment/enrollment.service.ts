@@ -6,6 +6,7 @@ import { CreateEnrollmentDto } from './dto/create-enrollment.dto';
 import { UpdateEnrollmentDto } from './dto/update-enrollment.dto';
 import { NotificationService } from '../notification/notification.service';
 import { PaymentService } from '../payment/payment.service';
+import { CertificateService } from '../certificate/certificate.service';
 import { AssignmentSubmission } from '../assignment-submissions/entities/assignment-submission.entity';
 
 @Injectable()
@@ -17,6 +18,7 @@ export class EnrollmentService {
     private assignmentSubmissionRepository: Repository<AssignmentSubmission>,
     private notificationService: NotificationService,
     private paymentService: PaymentService,
+    private certificateService: CertificateService,
   ) { }
 
   async create(createEnrollmentDto: CreateEnrollmentDto): Promise<Enrollment> {
@@ -85,6 +87,7 @@ export class EnrollmentService {
 
   async updateProgress(enrollmentId: number, progress: number): Promise<Enrollment> {
     const enrollment = await this.findOne(enrollmentId);
+    const previousProgress = enrollment.progress;
     enrollment.progress = Math.min(100, Math.max(0, progress));
 
     // Check if course is completed
@@ -97,6 +100,20 @@ export class EnrollmentService {
         enrollment.student.id,
         enrollment.course.name
       );
+
+      // Automatically generate certificate when course is completed
+      try {
+        await this.certificateService.generateCertificateForCompletedCourse(enrollmentId);
+
+        // Send certificate generation notification
+        await this.notificationService.createCertificateGeneratedNotification(
+          enrollment.student.id,
+          enrollment.course.name
+        );
+      } catch (error) {
+        // Log error but don't fail the progress update
+        console.error('Failed to generate certificate automatically:', error.message);
+      }
     }
 
     return await this.enrollmentRepository.save(enrollment);

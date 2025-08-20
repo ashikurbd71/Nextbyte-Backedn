@@ -6,11 +6,70 @@ This guide provides comprehensive documentation for the Certificate API endpoint
 
 The Certificate API allows you to:
 
-- Generate certificates when students complete courses
+- **Automatically generate certificates** when students complete courses (100% progress)
+- Generate certificates manually when needed
 - Verify certificate authenticity
 - Manage certificate data
 - Retrieve certificate statistics
 - Get user-specific certificates with filtering and sorting
+
+## Automatic Certificate Generation
+
+### How It Works
+
+When a student completes a course (reaches 100% progress), the system automatically:
+
+1. **Detects Course Completion**: The enrollment progress is updated to 100%
+2. **Generates Certificate**: A certificate is automatically created with a unique certificate number
+3. **Sends Notifications**: Both course completion and certificate generation notifications are sent
+4. **Links to Enrollment**: The certificate is linked to the specific enrollment record
+
+### Triggering Automatic Generation
+
+To trigger automatic certificate generation, update the enrollment progress to 100%:
+
+```bash
+PATCH /enrollments/{enrollmentId}/progress
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN
+
+{
+  "progress": 100
+}
+```
+
+**Response**:
+
+```json
+{
+  "id": 123,
+  "progress": 100,
+  "status": "completed",
+  "completedAt": "2023-12-21T10:30:00.000Z",
+  "student": { ... },
+  "course": { ... },
+  // ... other enrollment data
+}
+```
+
+### Automatic Process Flow
+
+1. **Progress Update**: Student completes course content
+2. **Completion Check**: System checks if progress = 100%
+3. **Status Update**: Enrollment status changes to "completed"
+4. **Certificate Generation**: Certificate is automatically created
+5. **Notifications Sent**:
+   - Course completion notification
+   - Certificate generation notification
+6. **Certificate Available**: Student can immediately access their certificate
+
+### Benefits
+
+- ✅ **No Admin Intervention**: Certificates are generated automatically
+- ✅ **Instant Availability**: Certificates are ready immediately after completion
+- ✅ **Consistent Process**: Same process for all course completions
+- ✅ **Notification System**: Students are notified of both completion and certificate
+- ✅ **Error Handling**: Graceful handling if certificate generation fails
 
 ## Base URL
 
