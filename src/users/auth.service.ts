@@ -25,26 +25,24 @@ export class AuthService {
 
     async sendSms(phone: string, otp: string): Promise<void> {
         try {
-            // Using BulkSMS BD API
             const apiKey = process.env.BULKSMS_API_KEY;
-            console.log(apiKey);
             const apiUrl = 'https://bulksmsbd.net/api/smsapi';
 
             const response = await axios.post(apiUrl, {
                 api_key: apiKey,
                 type: 'text',
-                contacts: phone,
-                senderid: '8809617625025',
-                msg: `Your NextByte Academy verification code is: ${otp}. Valid for 5 minutes.`,
+                number: phone, // <-- contacts নয়, number
+                senderid: '8809617625025', // <-- Approved senderid
+                message: `Your NextByte Academy verification code is: ${otp}. Valid for 5 minutes.`
             });
 
             console.log('SMS sent successfully:', response.data);
         } catch (error) {
             console.error('SMS sending failed:', error);
-            // In development, just log the OTP
             console.log(`Development OTP for ${phone}: ${otp}`);
         }
     }
+
 
     async register(createUserDto: CreateUserDto) {
         // Check if user with phone already exists
@@ -171,10 +169,21 @@ export class AuthService {
             token,
             user: {
                 id: user.id,
-                phone: user.phone,
                 name: user.name,
                 email: user.email,
+                phone: user.phone,
+                photoUrl: user.photoUrl,
+                address: user.address,
+                age: user.age,
+                instituteName: user.instituteName,
+                semester: user.semester,
+                subject: user.subject,
                 isVerified: user.isVerified,
+                isActive: user.isActive,
+                isBanned: user.isBanned,
+                createdAt: user.createdAt,
+                updatedAt: user.updatedAt,
+                // Excluded: lastOtp, otpExpiry, banReason, bannedAt for security
             },
         };
     }

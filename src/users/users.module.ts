@@ -8,6 +8,7 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
 import { User } from './entities/user.entity';
+import { AdminModule } from '../admin/admin.module';
 
 @Module({
   imports: [
@@ -17,7 +18,7 @@ import { User } from './entities/user.entity';
       secret: process.env.JWT_SECRET || 'your-secret-key',
       signOptions: { expiresIn: '215d' },
     }),
-
+    AdminModule,
   ],
   controllers: [UsersController, AuthController],
   providers: [UsersService, AuthService, JwtStrategy],

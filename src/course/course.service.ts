@@ -4,22 +4,51 @@ import { Repository } from 'typeorm';
 import { Course } from './entities/course.entity';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
+import { Category } from '../categoris/entities/categoris.entity';
+import { Admin } from '../admin/entities/admin.entity';
 
 @Injectable()
 export class CourseService {
   constructor(
     @InjectRepository(Course)
     private courseRepository: Repository<Course>,
+    @InjectRepository(Category)
+    private categoryRepository: Repository<Category>,
+    @InjectRepository(Admin)
+    private adminRepository: Repository<Admin>,
   ) { }
 
   async create(createCourseDto: CreateCourseDto): Promise<Course> {
-    const course = this.courseRepository.create(createCourseDto);
+    // Load the category and instructor entities
+    const category = await this.categoryRepository.findOne({
+      where: { id: createCourseDto.categoryId }
+    });
+
+    if (!category) {
+      throw new NotFoundException(`Category with ID ${createCourseDto.categoryId} not found`);
+    }
+
+    const instructor = await this.adminRepository.findOne({
+      where: { id: createCourseDto.instructorId }
+    });
+
+    if (!instructor) {
+      throw new NotFoundException(`Instructor with ID ${createCourseDto.instructorId} not found`);
+    }
+
+    // Create course object with proper relationships
+    const { categoryId, instructorId, ...courseData } = createCourseDto;
+    const course = this.courseRepository.create({
+      ...courseData,
+      category,
+      instructor,
+    });
     return await this.courseRepository.save(course);
   }
 
   async findAll(): Promise<Course[]> {
     return await this.courseRepository.find({
-      relations: ['category', 'instructor', 'students'],
+      relations: ['category', 'instructor', 'students', 'modules', 'reviews'],
       order: { createdAt: 'DESC' }
     });
   }
@@ -39,7 +68,39 @@ export class CourseService {
 
   async update(id: number, updateCourseDto: UpdateCourseDto): Promise<Course> {
     const course = await this.findOne(id);
-    Object.assign(course, updateCourseDto);
+
+    // Handle category update if provided
+    if (updateCourseDto.categoryId) {
+      const category = await this.categoryRepository.findOne({
+        where: { id: updateCourseDto.categoryId }
+      });
+
+      if (!category) {
+        throw new NotFoundException(`Category with ID ${updateCourseDto.categoryId} not found`);
+      }
+
+      course.category = category;
+    }
+
+    // Handle instructor update if provided
+    if (updateCourseDto.instructorId) {
+      const instructor = await this.adminRepository.findOne({
+        where: { id: updateCourseDto.instructorId }
+      });
+
+      if (!instructor) {
+        throw new NotFoundException(`Instructor with ID ${updateCourseDto.instructorId} not found`);
+      }
+
+      course.instructor = instructor;
+    }
+
+    // Remove the ID fields as they're not part of the Course entity
+    const { categoryId, instructorId, ...updateData } = updateCourseDto;
+
+    // Update other fields
+    Object.assign(course, updateData);
+
     return await this.courseRepository.save(course);
   }
 
@@ -51,7 +112,7 @@ export class CourseService {
   async findByCategory(categoryId: number): Promise<Course[]> {
     return await this.courseRepository.find({
       where: { category: { id: categoryId } },
-      relations: ['category', 'instructor'],
+      relations: ['category', 'instructor', 'students', 'modules', 'reviews'],
       order: { createdAt: 'DESC' }
     });
   }
@@ -59,7 +120,7 @@ export class CourseService {
   async findByInstructor(instructorId: number): Promise<Course[]> {
     return await this.courseRepository.find({
       where: { instructor: { id: instructorId } },
-      relations: ['category', 'students'],
+      relations: ['category', 'students', 'modules', 'reviews'],
       order: { createdAt: 'DESC' }
     });
   }
