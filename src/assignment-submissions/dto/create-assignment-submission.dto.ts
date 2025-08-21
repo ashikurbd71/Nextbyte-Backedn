@@ -19,4 +19,7 @@ export class CreateAssignmentSubmissionDto {
 
     @IsNumber()
     assignmentId: number;
+
+    @IsNumber()
+    studentId: number;
 }

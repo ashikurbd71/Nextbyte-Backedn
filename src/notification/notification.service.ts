@@ -5,12 +5,15 @@ import { Notification, NotificationType, NotificationStatus } from './entities/n
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { UpdateNotificationDto } from './dto/update-notification.dto';
 import { EmailService } from '../admin/email.service';
+import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class NotificationService {
   constructor(
     @InjectRepository(Notification)
     private notificationRepository: Repository<Notification>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
     private emailService: EmailService,
   ) { }
 
@@ -97,11 +100,17 @@ export class NotificationService {
     feedback: string,
     courseName: string
   ): Promise<Notification> {
+    // Load the user with email to ensure we have the recipient's email
+    const user = await this.userRepository.findOne({ where: { id: studentId } });
+    if (!user) {
+      throw new Error(`User with ID ${studentId} not found`);
+    }
+
     const notification = this.notificationRepository.create({
       title: 'Assignment Feedback Received',
       message: `Your assignment "${assignmentTitle}" has been reviewed. You received ${marks} marks. ${feedback ? `Feedback: ${feedback}` : ''}`,
       type: NotificationType.ASSIGNMENT_FEEDBACK,
-      recipient: { id: studentId },
+      recipient: user,
       metadata: {
         assignmentTitle,
         marks,
@@ -121,11 +130,17 @@ export class NotificationService {
     assignmentTitle: string,
     moduleName: string
   ): Promise<Notification> {
+    // Load the user with email to ensure we have the recipient's email
+    const user = await this.userRepository.findOne({ where: { id: studentId } });
+    if (!user) {
+      throw new Error(`User with ID ${studentId} not found`);
+    }
+
     const notification = this.notificationRepository.create({
       title: 'Assignment Submitted Successfully',
       message: `Your assignment "${assignmentTitle}" for module "${moduleName}" has been submitted successfully and is under review.`,
       type: NotificationType.ASSIGNMENT_SUBMITTED,
-      recipient: { id: studentId },
+      recipient: user,
       metadata: {
         assignmentTitle,
         moduleName
@@ -143,11 +158,17 @@ export class NotificationService {
     courseName: string,
     amount: number
   ): Promise<Notification> {
+    // Load the user with email to ensure we have the recipient's email
+    const user = await this.userRepository.findOne({ where: { id: studentId } });
+    if (!user) {
+      throw new Error(`User with ID ${studentId} not found`);
+    }
+
     const notification = this.notificationRepository.create({
       title: 'Course Enrollment Successful',
       message: `You have successfully enrolled in "${courseName}" for ${amount} BDT. Welcome to the course!`,
       type: NotificationType.COURSE_ENROLLMENT,
-      recipient: { id: studentId },
+      recipient: user,
       metadata: {
         courseName,
         amount
@@ -164,11 +185,17 @@ export class NotificationService {
     studentId: number,
     courseName: string
   ): Promise<Notification> {
+    // Load the user with email to ensure we have the recipient's email
+    const user = await this.userRepository.findOne({ where: { id: studentId } });
+    if (!user) {
+      throw new Error(`User with ID ${studentId} not found`);
+    }
+
     const notification = this.notificationRepository.create({
       title: 'Course Completed!',
       message: `Congratulations! You have successfully completed "${courseName}". Well done!`,
       type: NotificationType.COURSE_COMPLETED,
-      recipient: { id: studentId },
+      recipient: user,
       metadata: {
         courseName
       }
@@ -184,11 +211,17 @@ export class NotificationService {
     studentId: number,
     courseName: string
   ): Promise<Notification> {
+    // Load the user with email to ensure we have the recipient's email
+    const user = await this.userRepository.findOne({ where: { id: studentId } });
+    if (!user) {
+      throw new Error(`User with ID ${studentId} not found`);
+    }
+
     const notification = this.notificationRepository.create({
       title: 'Certificate Generated!',
       message: `Your certificate for "${courseName}" has been automatically generated and is ready for download. Congratulations on your achievement!`,
       type: NotificationType.CERTIFICATE_GENERATED,
-      recipient: { id: studentId },
+      recipient: user,
       metadata: {
         courseName,
         certificateGenerated: true
@@ -207,11 +240,17 @@ export class NotificationService {
     amount: number,
     transactionId: string
   ): Promise<Notification> {
+    // Load the user with email to ensure we have the recipient's email
+    const user = await this.userRepository.findOne({ where: { id: studentId } });
+    if (!user) {
+      throw new Error(`User with ID ${studentId} not found`);
+    }
+
     const notification = this.notificationRepository.create({
       title: 'Payment Successful',
       message: `Your payment of ${amount} BDT for "${courseName}" has been processed successfully. Transaction ID: ${transactionId}`,
       type: NotificationType.PAYMENT_SUCCESS,
-      recipient: { id: studentId },
+      recipient: user,
       metadata: {
         courseName,
         amount,
@@ -231,11 +270,17 @@ export class NotificationService {
     amount: number,
     reason: string
   ): Promise<Notification> {
+    // Load the user with email to ensure we have the recipient's email
+    const user = await this.userRepository.findOne({ where: { id: studentId } });
+    if (!user) {
+      throw new Error(`User with ID ${studentId} not found`);
+    }
+
     const notification = this.notificationRepository.create({
       title: 'Payment Failed',
       message: `Your payment of ${amount} BDT for "${courseName}" has failed. Reason: ${reason}. Please try again.`,
       type: NotificationType.PAYMENT_FAILED,
-      recipient: { id: studentId },
+      recipient: user,
       metadata: {
         courseName,
         amount,
@@ -254,11 +299,17 @@ export class NotificationService {
     moduleName: string,
     courseName: string
   ): Promise<Notification> {
+    // Load the user with email to ensure we have the recipient's email
+    const user = await this.userRepository.findOne({ where: { id: studentId } });
+    if (!user) {
+      throw new Error(`User with ID ${studentId} not found`);
+    }
+
     const notification = this.notificationRepository.create({
       title: 'New Module Available',
       message: `A new module "${moduleName}" has been added to "${courseName}". Check it out!`,
       type: NotificationType.GENERAL,
-      recipient: { id: studentId },
+      recipient: user,
       metadata: {
         moduleName,
         courseName
@@ -277,11 +328,17 @@ export class NotificationService {
     message: string,
     metadata?: any
   ): Promise<Notification> {
+    // Load the user with email to ensure we have the recipient's email
+    const user = await this.userRepository.findOne({ where: { id: studentId } });
+    if (!user) {
+      throw new Error(`User with ID ${studentId} not found`);
+    }
+
     const notification = this.notificationRepository.create({
       title,
       message,
       type: NotificationType.GENERAL,
-      recipient: { id: studentId },
+      recipient: user,
       metadata
     });
 
@@ -293,12 +350,23 @@ export class NotificationService {
 
   private async sendNotificationEmail(notification: Notification): Promise<void> {
     try {
-      const emailHTML = this.generateEmailHTML(notification);
-      const actionButton = this.getEmailActionButton(notification);
+      // Ensure the recipient relation is loaded
+      const notificationWithRecipient = await this.notificationRepository.findOne({
+        where: { id: notification.id },
+        relations: ['recipient']
+      });
+
+      if (!notificationWithRecipient || !notificationWithRecipient.recipient) {
+        console.error('Notification or recipient not found for email sending');
+        return;
+      }
+
+      const emailHTML = this.generateEmailHTML(notificationWithRecipient);
+      const actionButton = this.getEmailActionButton(notificationWithRecipient);
 
       await this.emailService.sendEmail({
-        to: notification.recipient.email,
-        subject: notification.title,
+        to: notificationWithRecipient.recipient.email,
+        subject: notificationWithRecipient.title,
         html: emailHTML + actionButton
       });
 

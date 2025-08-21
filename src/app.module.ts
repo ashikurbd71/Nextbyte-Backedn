@@ -11,7 +11,7 @@ import { ModuleModule } from './module/module.module';
 import { AssignmentModule } from './assignment/assignment.module';
 import { ReviewModule } from './review/review.module';
 import { EnrollmentModule } from './enrollment/enrollment.module';
-import { PaymentModule } from './payment/payment.module';
+
 import { LessonsModule } from './lessons/lessons.module';
 import { AssignmentSubmissionsModule } from './assignment-submissions/assignment-submissions.module';
 import { NotificationModule } from './notification/notification.module';
@@ -45,7 +45,6 @@ import { CertificateModule } from './certificate/certificate.module';
     AssignmentModule,
     ReviewModule,
     EnrollmentModule,
-    PaymentModule,
     LessonsModule,
     AssignmentSubmissionsModule,
     NotificationModule,

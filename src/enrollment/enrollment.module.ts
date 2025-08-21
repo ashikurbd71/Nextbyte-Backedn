@@ -5,18 +5,19 @@ import { EnrollmentController } from './enrollment.controller';
 import { Enrollment } from './entities/enrollment.entity';
 import { AssignmentSubmission } from '../assignment-submissions/entities/assignment-submission.entity';
 import { NotificationModule } from '../notification/notification.module';
-import { PaymentModule } from '../payment/payment.module';
 import { CertificateModule } from '../certificate/certificate.module';
+import { EmailService } from '../admin/email.service';
+import { User } from '../users/entities/user.entity';
+import { Course } from '../course/entities/course.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Enrollment, AssignmentSubmission]),
+    TypeOrmModule.forFeature([Enrollment, AssignmentSubmission, User, Course]),
     NotificationModule,
-    PaymentModule,
     CertificateModule
   ],
   controllers: [EnrollmentController],
-  providers: [EnrollmentService],
+  providers: [EnrollmentService, EmailService],
   exports: [EnrollmentService],
 })
 export class EnrollmentModule { }

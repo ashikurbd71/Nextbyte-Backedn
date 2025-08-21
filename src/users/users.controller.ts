@@ -108,4 +108,11 @@ export class UsersController {
   verifyUser(@Param('id') id: string) {
     return this.usersService.verifyUser(+id);
   }
+
+  // @UseGuards(JwtAuthGuard)
+  @Get('student/:studentId')
+  @HttpCode(HttpStatus.OK)
+  findByStudentId(@Param('studentId') studentId: string) {
+    return this.usersService.findByStudentId(studentId);
+  }
 }

@@ -34,7 +34,13 @@ export class UsersService {
       }
     }
 
-    const user = this.userRepository.create(createUserDto);
+    // Generate unique student ID
+    const studentId = await this.generateStudentId();
+
+    const user = this.userRepository.create({
+      ...createUserDto,
+      studentId
+    });
     return await this.userRepository.save(user);
   }
 
@@ -89,6 +95,18 @@ export class UsersService {
 
     if (!user) {
       throw new NotFoundException(`User with email ${email} not found`);
+    }
+
+    return user;
+  }
+
+  async findByStudentId(studentId: string): Promise<User> {
+    const user = await this.userRepository.findOne({
+      where: { studentId }
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with student ID ${studentId} not found`);
     }
 
     return user;
@@ -218,5 +236,46 @@ export class UsersService {
     ]);
 
     return { total, active, banned, verified, unverified };
+  }
+
+  private async generateStudentId(): Promise<string> {
+    // Get the count of existing users to generate the next number
+    const userCount = await this.userRepository.count();
+    const nextNumber = userCount + 1;
+
+    // Format: NEXTBYTE-000001, NEXTBYTE-000002, etc.
+    const paddedNumber = nextNumber.toString().padStart(6, '0');
+    const studentId = `NEXTBYTE-${paddedNumber}`;
+
+    // Check if this student ID already exists (in case of concurrent requests)
+    const existingUser = await this.userRepository.findOne({
+      where: { studentId }
+    });
+
+    if (existingUser) {
+      // If exists, try with a higher number
+      return this.generateStudentIdWithOffset(nextNumber + 1);
+    }
+
+    return studentId;
+  }
+
+  private async generateStudentIdWithOffset(startNumber: number): Promise<string> {
+    let number = startNumber;
+    let studentId: string;
+    let existingUser: User | null;
+
+    do {
+      const paddedNumber = number.toString().padStart(6, '0');
+      studentId = `NEXTBYTE-${paddedNumber}`;
+
+      existingUser = await this.userRepository.findOne({
+        where: { studentId }
+      });
+
+      number++;
+    } while (existingUser);
+
+    return studentId;
   }
 }

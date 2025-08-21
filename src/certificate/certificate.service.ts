@@ -190,6 +190,35 @@ export class CertificateService {
     return certificate;
   }
 
+  async getCertificateWithStudentId(certificateNumber: string): Promise<{
+    certificate: Certificate;
+    studentId: string;
+    studentName: string;
+    courseName: string;
+    completionPercentage: number;
+    issuedDate: Date;
+    certificateNumber: string;
+  }> {
+    const certificate = await this.certificateRepository.findOne({
+      where: { certificateNumber },
+      relations: ['student', 'course', 'enrollment'],
+    });
+
+    if (!certificate) {
+      throw new NotFoundException(`Certificate with number ${certificateNumber} not found`);
+    }
+
+    return {
+      certificate,
+      studentId: certificate.student.studentId || 'N/A',
+      studentName: certificate.studentName,
+      courseName: certificate.courseName,
+      completionPercentage: certificate.completionPercentage,
+      issuedDate: certificate.issuedDate,
+      certificateNumber: certificate.certificateNumber,
+    };
+  }
+
   async getUserCertificateStats(userId: number): Promise<{
     totalCertificates: number;
     activeCertificates: number;

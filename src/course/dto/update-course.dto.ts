@@ -67,6 +67,10 @@ export class UpdateCourseDto {
     thumbnail?: string;
 
     @IsOptional()
+    @IsUrl()
+    facebookGroupLink?: string;
+
+    @IsOptional()
     @IsArray()
     assignments?: Assignment[];
 

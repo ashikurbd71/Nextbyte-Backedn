@@ -4,7 +4,8 @@ import { Repository } from 'typeorm';
 import { AssignmentSubmission, SubmissionStatus } from './entities/assignment-submission.entity';
 import { CreateAssignmentSubmissionDto } from './dto/create-assignment-submission.dto';
 import { UpdateAssignmentSubmissionDto } from './dto/update-assignment-submission.dto';
-
+import { User } from '../users/entities/user.entity';
+import { Assignment } from '../assignment/entities/assignment.entity';
 import { NotificationService } from '../notification/notification.service';
 import { ReviewSubmissionDto } from './dto/review-submission.dto';
 
@@ -13,22 +14,35 @@ export class AssignmentSubmissionsService {
     constructor(
         @InjectRepository(AssignmentSubmission)
         private assignmentSubmissionRepository: Repository<AssignmentSubmission>,
+        @InjectRepository(User)
+        private userRepository: Repository<User>,
+        @InjectRepository(Assignment)
+        private assignmentRepository: Repository<Assignment>,
         private notificationService: NotificationService,
     ) { }
 
-    async create(createAssignmentSubmissionDto: CreateAssignmentSubmissionDto, userId: number): Promise<AssignmentSubmission> {
+    async create(createAssignmentSubmissionDto: CreateAssignmentSubmissionDto): Promise<AssignmentSubmission> {
+        const studentId = createAssignmentSubmissionDto.studentId;
+
+        // Find user and assignment
+        const user = await this.findUserById(studentId);
+        const assignment = await this.findAssignmentById(createAssignmentSubmissionDto.assignmentId);
+
         const submission = this.assignmentSubmissionRepository.create({
             ...createAssignmentSubmissionDto,
-            student: { id: userId }
+            studentId: studentId,
+            assignmentId: createAssignmentSubmissionDto.assignmentId,
+
+
         });
 
         const savedSubmission = await this.assignmentSubmissionRepository.save(submission);
 
         // Create notification for assignment submission
         await this.notificationService.createAssignmentSubmittedNotification(
-            userId,
-            savedSubmission.assignment.title,
-            savedSubmission.assignment.module.title
+            studentId,
+            savedSubmission.assignmentTitle,
+            savedSubmission.moduleTitle
         );
 
         return savedSubmission;
@@ -36,7 +50,7 @@ export class AssignmentSubmissionsService {
 
     async findAll(): Promise<AssignmentSubmission[]> {
         return await this.assignmentSubmissionRepository.find({
-            relations: ['student', 'assignment', 'assignment.module'],
+            relations: ['student', 'assignment'],
             order: { createdAt: 'DESC' }
         });
     }
@@ -44,7 +58,7 @@ export class AssignmentSubmissionsService {
     async findOne(id: number): Promise<AssignmentSubmission> {
         const submission = await this.assignmentSubmissionRepository.findOne({
             where: { id },
-            relations: ['student', 'assignment', 'assignment.module']
+            relations: ['student', 'assignment']
         });
 
         if (!submission) {
@@ -56,25 +70,33 @@ export class AssignmentSubmissionsService {
 
     async findByStudent(studentId: number): Promise<AssignmentSubmission[]> {
         return await this.assignmentSubmissionRepository.find({
-            where: { student: { id: studentId } },
-            relations: ['assignment', 'assignment.module'],
+            where: { studentId },
+            relations: ['assignment'],
             order: { createdAt: 'DESC' }
         });
     }
 
     async findByAssignment(assignmentId: number): Promise<AssignmentSubmission[]> {
         return await this.assignmentSubmissionRepository.find({
-            where: { assignment: { id: assignmentId } },
-            relations: ['student', 'assignment'],
+            where: { assignmentId },
+            relations: ['student'],
             order: { createdAt: 'DESC' }
         });
     }
 
-    async update(id: number, updateAssignmentSubmissionDto: UpdateAssignmentSubmissionDto, userId: number): Promise<AssignmentSubmission> {
+    async findByUserAndAssignment(userId: number, assignmentId: number): Promise<AssignmentSubmission | null> {
+        return await this.assignmentSubmissionRepository.findOne({
+            where: { studentId: userId, assignmentId },
+            relations: ['assignment']
+        });
+    }
+
+    async update(id: number, updateAssignmentSubmissionDto: UpdateAssignmentSubmissionDto): Promise<AssignmentSubmission> {
+        const studentId = updateAssignmentSubmissionDto.studentId;
         const submission = await this.findOne(id);
 
         // Check if user owns this submission
-        if (submission.student.id !== userId) {
+        if (submission.studentId !== studentId) {
             throw new ForbiddenException('You can only update your own submissions');
         }
 
@@ -94,11 +116,11 @@ export class AssignmentSubmissionsService {
 
         // Create notification for assignment feedback
         await this.notificationService.createAssignmentFeedbackNotification(
-            submission.student.id,
-            submission.assignment.title,
+            submission.studentId,
+            submission.assignmentTitle,
             reviewDto.marks,
             reviewDto.feedback || '',
-            submission.assignment.module.title
+            submission.moduleTitle
         );
 
         return updatedSubmission;
@@ -108,7 +130,7 @@ export class AssignmentSubmissionsService {
         const submission = await this.findOne(id);
 
         // Check if user owns this submission
-        if (submission.student.id !== userId) {
+        if (submission.studentId !== userId) {
             throw new ForbiddenException('You can only delete your own submissions');
         }
 
@@ -136,11 +158,31 @@ export class AssignmentSubmissionsService {
             statusCounts,
             submissions: submissions.map(s => ({
                 id: s.id,
-                assignmentTitle: s.assignment.title,
+                assignmentTitle: s.assignmentTitle,
                 marks: s.marks,
                 status: s.status,
                 submittedAt: s.createdAt
             }))
         };
+    }
+
+    // Helper methods for finding user and assignment
+    private async findUserById(userId: number): Promise<User> {
+        const user = await this.userRepository.findOne({ where: { id: userId } });
+        if (!user) {
+            throw new NotFoundException(`User with ID ${userId} not found`);
+        }
+        return user;
+    }
+
+    private async findAssignmentById(assignmentId: number): Promise<Assignment> {
+        const assignment = await this.assignmentRepository.findOne({
+            where: { id: assignmentId },
+            relations: ['module']
+        });
+        if (!assignment) {
+            throw new NotFoundException(`Assignment with ID ${assignmentId} not found`);
+        }
+        return assignment;
     }
 }

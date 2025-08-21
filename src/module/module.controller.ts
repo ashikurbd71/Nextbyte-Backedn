@@ -5,7 +5,7 @@ import { UpdateModuleDto } from './dto/update-module.dto';
 import { JwtAuthGuard } from '../users/jwt-auth.guard';
 
 @Controller('modules')
-@UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
 export class ModuleController {
   constructor(private readonly moduleService: ModuleService) { }
 

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Payment, PaymentStatus } from '../payment/entities/payment.entity';
+import { PaymentStatus } from '../enrollment/entities/enrollment.entity';
 import { Enrollment, EnrollmentStatus } from '../enrollment/entities/enrollment.entity';
 import { User } from '../users/entities/user.entity';
 import { Admin } from '../admin/entities/admin.entity';
@@ -11,8 +11,6 @@ import { Review } from '../review/entities/review.entity';
 @Injectable()
 export class StatisticsService {
     constructor(
-        @InjectRepository(Payment)
-        private paymentRepository: Repository<Payment>,
         @InjectRepository(Enrollment)
         private enrollmentRepository: Repository<Enrollment>,
         @InjectRepository(User)
@@ -105,11 +103,11 @@ export class StatisticsService {
 
     private async getTotalEarningsYear(): Promise<number> {
         const startOfYear = new Date(new Date().getFullYear(), 0, 1);
-        const result = await this.paymentRepository
-            .createQueryBuilder('payment')
-            .select('SUM(payment.amount)', 'total')
-            .where('payment.status = :status', { status: PaymentStatus.SUCCESS })
-            .andWhere('payment.paidAt >= :startDate', { startDate: startOfYear })
+        const result = await this.enrollmentRepository
+            .createQueryBuilder('enrollment')
+            .select('SUM(enrollment.amountPaid)', 'total')
+            .where('enrollment.paymentStatus = :status', { status: PaymentStatus.SUCCESS })
+            .andWhere('enrollment.paidAt >= :startDate', { startDate: startOfYear })
             .getRawOne();
 
         return parseFloat(result?.total || '0');
@@ -117,11 +115,11 @@ export class StatisticsService {
 
     private async getTotalEarningsMonth(): Promise<number> {
         const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-        const result = await this.paymentRepository
-            .createQueryBuilder('payment')
-            .select('SUM(payment.amount)', 'total')
-            .where('payment.status = :status', { status: PaymentStatus.SUCCESS })
-            .andWhere('payment.paidAt >= :startDate', { startDate: startOfMonth })
+        const result = await this.enrollmentRepository
+            .createQueryBuilder('enrollment')
+            .select('SUM(enrollment.amountPaid)', 'total')
+            .where('enrollment.paymentStatus = :status', { status: PaymentStatus.SUCCESS })
+            .andWhere('enrollment.paidAt >= :startDate', { startDate: startOfMonth })
             .getRawOne();
 
         return parseFloat(result?.total || '0');
@@ -131,11 +129,11 @@ export class StatisticsService {
         const startOfDay = new Date();
         startOfDay.setHours(0, 0, 0, 0);
 
-        const result = await this.paymentRepository
-            .createQueryBuilder('payment')
-            .select('SUM(payment.amount)', 'total')
-            .where('payment.status = :status', { status: PaymentStatus.SUCCESS })
-            .andWhere('payment.paidAt >= :startDate', { startDate: startOfDay })
+        const result = await this.enrollmentRepository
+            .createQueryBuilder('enrollment')
+            .select('SUM(enrollment.amountPaid)', 'total')
+            .where('enrollment.paymentStatus = :status', { status: PaymentStatus.SUCCESS })
+            .andWhere('enrollment.paidAt >= :startDate', { startDate: startOfDay })
             .getRawOne();
 
         return parseFloat(result?.total || '0');
@@ -146,11 +144,11 @@ export class StatisticsService {
         startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
         startOfWeek.setHours(0, 0, 0, 0);
 
-        const result = await this.paymentRepository
-            .createQueryBuilder('payment')
-            .select('SUM(payment.amount)', 'total')
-            .where('payment.status = :status', { status: PaymentStatus.SUCCESS })
-            .andWhere('payment.paidAt >= :startDate', { startDate: startOfWeek })
+        const result = await this.enrollmentRepository
+            .createQueryBuilder('enrollment')
+            .select('SUM(enrollment.amountPaid)', 'total')
+            .where('enrollment.paymentStatus = :status', { status: PaymentStatus.SUCCESS })
+            .andWhere('enrollment.paidAt >= :startDate', { startDate: startOfWeek })
             .getRawOne();
 
         return parseFloat(result?.total || '0');
@@ -163,8 +161,8 @@ export class StatisticsService {
     }
 
     private async getTotalCancelledPayments(): Promise<number> {
-        return await this.paymentRepository.count({
-            where: { status: PaymentStatus.CANCELLED }
+        return await this.enrollmentRepository.count({
+            where: { paymentStatus: PaymentStatus.CANCELLED }
         });
     }
 
@@ -207,14 +205,14 @@ export class StatisticsService {
 
     private async getMonthlyEarnings(): Promise<any[]> {
         const currentYear = new Date().getFullYear();
-        const result = await this.paymentRepository
-            .createQueryBuilder('payment')
+        const result = await this.enrollmentRepository
+            .createQueryBuilder('enrollment')
             .select([
-                'EXTRACT(MONTH FROM payment.paidAt) as month',
-                'SUM(payment.amount) as total'
+                'EXTRACT(MONTH FROM enrollment.paidAt) as month',
+                'SUM(enrollment.amountPaid) as total'
             ])
-            .where('payment.status = :status', { status: PaymentStatus.SUCCESS })
-            .andWhere('EXTRACT(YEAR FROM payment.paidAt) = :year', { year: currentYear })
+            .where('enrollment.paymentStatus = :status', { status: PaymentStatus.SUCCESS })
+            .andWhere('EXTRACT(YEAR FROM enrollment.paidAt) = :year', { year: currentYear })
             .groupBy('month')
             .orderBy('month', 'ASC')
             .getRawMany();
@@ -230,14 +228,14 @@ export class StatisticsService {
 
     private async getWeeklyEarnings(): Promise<any[]> {
         const startOfYear = new Date(new Date().getFullYear(), 0, 1);
-        const result = await this.paymentRepository
-            .createQueryBuilder('payment')
+        const result = await this.enrollmentRepository
+            .createQueryBuilder('enrollment')
             .select([
-                'EXTRACT(WEEK FROM payment.paidAt) as week',
-                'SUM(payment.amount) as total'
+                'EXTRACT(WEEK FROM enrollment.paidAt) as week',
+                'SUM(enrollment.amountPaid) as total'
             ])
-            .where('payment.status = :status', { status: PaymentStatus.SUCCESS })
-            .andWhere('payment.paidAt >= :startDate', { startDate: startOfYear })
+            .where('enrollment.paymentStatus = :status', { status: PaymentStatus.SUCCESS })
+            .andWhere('enrollment.paidAt >= :startDate', { startDate: startOfYear })
             .groupBy('week')
             .orderBy('week', 'ASC')
             .limit(12)
@@ -251,14 +249,14 @@ export class StatisticsService {
 
     private async getDailyEarnings(): Promise<any[]> {
         const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-        const result = await this.paymentRepository
-            .createQueryBuilder('payment')
+        const result = await this.enrollmentRepository
+            .createQueryBuilder('enrollment')
             .select([
-                'DATE(payment.paidAt) as date',
-                'SUM(payment.amount) as total'
+                'DATE(enrollment.paidAt) as date',
+                'SUM(enrollment.amountPaid) as total'
             ])
-            .where('payment.status = :status', { status: PaymentStatus.SUCCESS })
-            .andWhere('payment.paidAt >= :startDate', { startDate: startOfMonth })
+            .where('enrollment.paymentStatus = :status', { status: PaymentStatus.SUCCESS })
+            .andWhere('enrollment.paidAt >= :startDate', { startDate: startOfMonth })
             .groupBy('date')
             .orderBy('date', 'ASC')
             .getRawMany();
@@ -307,10 +305,10 @@ export class StatisticsService {
 
     private async getPaymentStatusStats(): Promise<any> {
         const [completed, pending, failed, cancelled] = await Promise.all([
-            this.paymentRepository.count({ where: { status: PaymentStatus.SUCCESS } }),
-            this.paymentRepository.count({ where: { status: PaymentStatus.PENDING } }),
-            this.paymentRepository.count({ where: { status: PaymentStatus.FAILED } }),
-            this.paymentRepository.count({ where: { status: PaymentStatus.CANCELLED } })
+            this.enrollmentRepository.count({ where: { paymentStatus: PaymentStatus.SUCCESS } }),
+            this.enrollmentRepository.count({ where: { paymentStatus: PaymentStatus.PENDING } }),
+            this.enrollmentRepository.count({ where: { paymentStatus: PaymentStatus.FAILED } }),
+            this.enrollmentRepository.count({ where: { paymentStatus: PaymentStatus.CANCELLED } })
         ]);
 
         return {
@@ -340,23 +338,23 @@ export class StatisticsService {
     }
 
     async getEarningsReport(startDate: Date, endDate: Date) {
-        const result = await this.paymentRepository
-            .createQueryBuilder('payment')
-            .leftJoin('payment.course', 'course')
-            .leftJoin('payment.user', 'user')
+        const result = await this.enrollmentRepository
+            .createQueryBuilder('enrollment')
+            .leftJoin('enrollment.course', 'course')
+            .leftJoin('enrollment.student', 'student')
             .select([
-                'payment.id as paymentId',
-                'payment.amount as amount',
-                'payment.status as status',
-                'payment.paidAt as paidAt',
-                'payment.paymentMethod as paymentMethod',
+                'enrollment.id as enrollmentId',
+                'enrollment.amountPaid as amount',
+                'enrollment.paymentStatus as status',
+                'enrollment.paidAt as paidAt',
+                'enrollment.paymentMethod as paymentMethod',
                 'course.name as courseName',
-                'user.name as studentName',
-                'user.email as studentEmail'
+                'student.name as studentName',
+                'student.email as studentEmail'
             ])
-            .where('payment.paidAt BETWEEN :startDate AND :endDate', { startDate, endDate })
-            .andWhere('payment.status = :status', { status: PaymentStatus.SUCCESS })
-            .orderBy('payment.paidAt', 'DESC')
+            .where('enrollment.paidAt BETWEEN :startDate AND :endDate', { startDate, endDate })
+            .andWhere('enrollment.paymentStatus = :status', { status: PaymentStatus.SUCCESS })
+            .orderBy('enrollment.paidAt', 'DESC')
             .getRawMany();
 
         const totalEarnings = result.reduce((sum, item) => sum + parseFloat(item.amount), 0);

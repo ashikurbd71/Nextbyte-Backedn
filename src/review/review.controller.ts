@@ -5,16 +5,19 @@ import { UpdateReviewDto } from './dto/update-review.dto';
 import { JwtAuthGuard } from '../users/jwt-auth.guard';
 
 @Controller('reviews')
-@UseGuards(JwtAuthGuard)
+// @UseGuards(JwtAuthGuard)
 export class ReviewController {
   constructor(private readonly reviewService: ReviewService) { }
 
   @Post()
   create(@Body() createReviewDto: CreateReviewDto, @Request() req) {
-    return this.reviewService.create({
-      ...createReviewDto,
-      user: { id: req.user.id }
-    });
+    return this.reviewService.create(createReviewDto);
+  }
+
+  @Get('can-review/:courseId')
+  // @UseGuards(JwtAuthGuard)
+  async canReviewCourse(@Param('courseId', ParseIntPipe) courseId: number, @Request() req) {
+    return this.reviewService.validateUserCanReview(req.user.id, courseId);
   }
 
   @Get()
@@ -23,6 +26,7 @@ export class ReviewController {
   }
 
   @Get('my')
+  // @UseGuards(JwtAuthGuard)
   findMyReviews(@Request() req) {
     return this.reviewService.findByUser(req.user.id);
   }

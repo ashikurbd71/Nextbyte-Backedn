@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Module } from './entities/module.entity';
+import { Course } from '../course/entities/course.entity';
 import { CreateModuleDto } from './dto/create-module.dto';
 import { UpdateModuleDto } from './dto/update-module.dto';
 import { NotificationService } from '../notification/notification.service';
@@ -12,21 +13,38 @@ export class ModuleService {
   constructor(
     @InjectRepository(Module)
     private moduleRepository: Repository<Module>,
+    @InjectRepository(Course)
+    private courseRepository: Repository<Course>,
     private notificationService: NotificationService,
     private enrollmentService: EnrollmentService,
   ) { }
 
   async create(createModuleDto: CreateModuleDto): Promise<Module> {
-    const module = this.moduleRepository.create(createModuleDto);
+    // Load the course entity
+    const course = await this.courseRepository.findOne({
+      where: { id: createModuleDto.courseId }
+    });
+
+    if (!course) {
+      throw new NotFoundException(`Course with ID ${createModuleDto.courseId} not found`);
+    }
+
+    // Create module object with proper relationships
+    const { courseId, ...moduleData } = createModuleDto;
+    const module = this.moduleRepository.create({
+      ...moduleData,
+      course,
+    });
+
     const savedModule = await this.moduleRepository.save(module);
 
     // Send notification to enrolled students about new module
-    const enrollments = await this.enrollmentService.findByCourse(module.course.id);
+    const enrollments = await this.enrollmentService.findByCourse(course.id);
     for (const enrollment of enrollments) {
       await this.notificationService.createNewModuleUploadNotification(
         enrollment.student.id,
-        module.title,
-        module.course.name
+        savedModule.title,
+        course.name
       );
     }
 
@@ -56,14 +74,31 @@ export class ModuleService {
   async findByCourse(courseId: number): Promise<Module[]> {
     return await this.moduleRepository.find({
       where: { course: { id: courseId } },
-      relations: ['lessons', 'assignments'],
+      relations: ['lessons', 'assignments', 'course'],
       order: { order: 'ASC' }
     });
   }
 
   async update(id: number, updateModuleDto: UpdateModuleDto): Promise<Module> {
     const module = await this.findOne(id);
-    Object.assign(module, updateModuleDto);
+
+    // Handle course update if provided
+    if (updateModuleDto.courseId) {
+      const course = await this.courseRepository.findOne({
+        where: { id: updateModuleDto.courseId }
+      });
+
+      if (!course) {
+        throw new NotFoundException(`Course with ID ${updateModuleDto.courseId} not found`);
+      }
+
+      module.course = course;
+    }
+
+    // Remove the courseId field as it's not part of the Module entity
+    const { courseId, ...updateData } = updateModuleDto;
+    Object.assign(module, updateData);
+
     return await this.moduleRepository.save(module);
   }
 

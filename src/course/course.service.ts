@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Course } from './entities/course.entity';
@@ -19,36 +19,66 @@ export class CourseService {
   ) { }
 
   async create(createCourseDto: CreateCourseDto): Promise<Course> {
-    // Load the category and instructor entities
-    const category = await this.categoryRepository.findOne({
-      where: { id: createCourseDto.categoryId }
-    });
+    try {
+      // Validate required fields
+      if (!createCourseDto.name || !createCourseDto.slugName) {
+        throw new BadRequestException('Course name and slug name are required');
+      }
 
-    if (!category) {
-      throw new NotFoundException(`Category with ID ${createCourseDto.categoryId} not found`);
+      // Check if course with same slug already exists
+      const existingCourse = await this.courseRepository.findOne({
+        where: { slugName: createCourseDto.slugName }
+      });
+
+      if (existingCourse) {
+        throw new BadRequestException(`Course with slug name '${createCourseDto.slugName}' already exists`);
+      }
+
+      // Load the category and instructor entities
+      const category = await this.categoryRepository.findOne({
+        where: { id: createCourseDto.categoryId }
+      });
+
+      if (!category) {
+        throw new NotFoundException(`Category with ID ${createCourseDto.categoryId} not found`);
+      }
+
+      const instructor = await this.adminRepository.findOne({
+        where: { id: createCourseDto.instructorId }
+      });
+
+      if (!instructor) {
+        throw new NotFoundException(`Instructor with ID ${createCourseDto.instructorId} not found`);
+      }
+
+      // Validate price and discount price
+      if (createCourseDto.discountPrice && createCourseDto.discountPrice >= createCourseDto.price) {
+        throw new BadRequestException('Discount price must be less than regular price');
+      }
+
+      // Create course object with proper relationships
+      const { categoryId, instructorId, ...courseData } = createCourseDto;
+      const course = this.courseRepository.create({
+        ...courseData,
+        category,
+        instructor,
+        totalJoin: 0,
+        isActive: createCourseDto.isActive ?? true,
+        isPublished: createCourseDto.isPublished ?? false,
+      });
+
+      return await this.courseRepository.save(course);
+    } catch (error) {
+      if (error instanceof BadRequestException || error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new BadRequestException('Failed to create course: ' + error.message);
     }
-
-    const instructor = await this.adminRepository.findOne({
-      where: { id: createCourseDto.instructorId }
-    });
-
-    if (!instructor) {
-      throw new NotFoundException(`Instructor with ID ${createCourseDto.instructorId} not found`);
-    }
-
-    // Create course object with proper relationships
-    const { categoryId, instructorId, ...courseData } = createCourseDto;
-    const course = this.courseRepository.create({
-      ...courseData,
-      category,
-      instructor,
-    });
-    return await this.courseRepository.save(course);
   }
 
   async findAll(): Promise<Course[]> {
     return await this.courseRepository.find({
-      relations: ['category', 'instructor', 'students', 'modules', 'reviews'],
+      relations: ['category', 'instructor', 'students', 'modules', 'reviews', 'modules.lessons', 'modules.assignments', 'reviews.user'],
       order: { createdAt: 'DESC' }
     });
   }
@@ -56,7 +86,7 @@ export class CourseService {
   async findOne(id: number): Promise<Course> {
     const course = await this.courseRepository.findOne({
       where: { id },
-      relations: ['category', 'instructor', 'students', 'modules', 'reviews']
+      relations: ['category', 'instructor', 'students', 'modules', 'reviews', 'modules.lessons', 'modules.assignments', 'reviews.user']
     });
 
     if (!course) {
@@ -112,7 +142,7 @@ export class CourseService {
   async findByCategory(categoryId: number): Promise<Course[]> {
     return await this.courseRepository.find({
       where: { category: { id: categoryId } },
-      relations: ['category', 'instructor', 'students', 'modules', 'reviews'],
+      relations: ['category', 'instructor', 'students', 'modules', 'reviews', 'modules.lessons', 'modules.assignments', 'reviews.user'],
       order: { createdAt: 'DESC' }
     });
   }
@@ -120,7 +150,7 @@ export class CourseService {
   async findByInstructor(instructorId: number): Promise<Course[]> {
     return await this.courseRepository.find({
       where: { instructor: { id: instructorId } },
-      relations: ['category', 'students', 'modules', 'reviews'],
+      relations: ['category', 'students', 'modules', 'reviews', 'reviews.user'],
       order: { createdAt: 'DESC' }
     });
   }

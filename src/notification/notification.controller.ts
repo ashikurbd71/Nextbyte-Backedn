@@ -6,7 +6,7 @@ import { JwtAuthGuard } from '../users/jwt-auth.guard';
 import { NotificationType } from './entities/notification.entity';
 
 @Controller('notifications')
-@UseGuards(JwtAuthGuard)
+// @UseGuards(JwtAuthGuard)
 export class NotificationController {
   constructor(private readonly notificationService: NotificationService) { }
 
@@ -20,14 +20,16 @@ export class NotificationController {
     return this.notificationService.findAll();
   }
 
-  @Get('my')
-  findMyNotifications(@Request() req) {
-    return this.notificationService.findByUser(req.user.id);
+
+
+  @Get('student/:id')
+  findStudentNotifications(@Param('id', ParseIntPipe) studentId: number) {
+    return this.notificationService.findByUser(studentId);
   }
 
-  @Get('unread-count')
-  getUnreadCount(@Request() req) {
-    return this.notificationService.getUnreadCount(req.user.id);
+  @Get('student/unread-count/:id')
+  getStudentUnreadCount(@Param('id', ParseIntPipe) studentId: number) {
+    return this.notificationService.getUnreadCount(studentId);
   }
 
   @Get('type/:type')
@@ -45,14 +47,14 @@ export class NotificationController {
     return this.notificationService.update(id, updateNotificationDto);
   }
 
-  @Patch(':id/read')
+  @Patch('student/:id/read')
   markAsRead(@Param('id', ParseIntPipe) id: number) {
     return this.notificationService.markAsRead(id);
   }
 
-  @Patch('mark-all-read')
-  markAllAsRead(@Request() req) {
-    return this.notificationService.markAllAsRead(req.user.id);
+  @Patch('student/mark-all-read/:id')
+  markAllAsRead(@Param('id', ParseIntPipe) id: number) {
+    return this.notificationService.markAllAsRead(id);
   }
 
   @Delete(':id')

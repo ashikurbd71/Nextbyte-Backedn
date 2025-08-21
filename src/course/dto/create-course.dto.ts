@@ -59,6 +59,10 @@ export class CreateCourseDto {
     thumbnail?: string;
 
     @IsOptional()
+    @IsUrl()
+    facebookGroupLink?: string;
+
+    @IsOptional()
     @IsArray()
     assignments?: Assignment[];
 

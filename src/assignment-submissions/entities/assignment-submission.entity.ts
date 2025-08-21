@@ -4,7 +4,8 @@ import {
     Column,
     CreateDateColumn,
     UpdateDateColumn,
-    ManyToOne
+    ManyToOne,
+    JoinColumn
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { Assignment } from '../../assignment/entities/assignment.entity';
@@ -49,10 +50,36 @@ export class AssignmentSubmission {
     @Column({ type: 'timestamp', nullable: true })
     reviewedAt: Date;
 
-    @ManyToOne(() => User)
+    // User information fields for easier access
+    @Column({ nullable: true })
+    studentName: string;
+
+    @Column({ nullable: true })
+    studentEmail: string;
+
+    @Column({ nullable: true })
+    studentPhone: string;
+
+    // Assignment information fields for easier access
+    @Column({ nullable: true })
+    assignmentTitle: string;
+
+    @Column({ nullable: true })
+    moduleTitle: string;
+
+    // Foreign key relationships
+    @Column()
+    studentId: number;
+
+    @Column()
+    assignmentId: number;
+
+    @ManyToOne(() => User, { onDelete: 'CASCADE' })
+    @JoinColumn({ name: 'studentId' })
     student: User;
 
-    @ManyToOne(() => Assignment, assignment => assignment.submissions)
+    @ManyToOne(() => Assignment, { onDelete: 'CASCADE' })
+    @JoinColumn({ name: 'assignmentId' })
     assignment: Assignment;
 
     @CreateDateColumn()

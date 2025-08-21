@@ -71,6 +71,9 @@ export class Course {
     @Column({ nullable: true })
     thumbnail: string;
 
+    @Column({ nullable: true })
+    facebookGroupLink: string;
+
     @Column({ type: 'json', nullable: true })
     assignments: Assignment[];
 
