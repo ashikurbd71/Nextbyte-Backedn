@@ -446,7 +446,7 @@ export class EnrollmentService {
         const assignmentCount = submissions.length;
 
         return {
-          studentId: enrollment.student.id,
+          student: enrollment.student,
           studentName: enrollment.student.name,
           averageMarks: Math.round(averageMarks * 100) / 100, // Round to 2 decimal places
           assignmentCount,

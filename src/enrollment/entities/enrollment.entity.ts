@@ -109,6 +109,8 @@ export class Enrollment {
     @Column({ type: 'int', default: 0 })
     progress: number; // Percentage of course completion
 
+
+
     @ManyToOne(() => User)
     student: User;
 

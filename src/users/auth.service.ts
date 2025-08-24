@@ -33,7 +33,7 @@ export class AuthService {
                 type: 'text',
                 number: phone, // <-- contacts নয়, number
                 senderid: '8809617625025', // <-- Approved senderid
-                message: `Your NextByte Academy verification code is: ${otp}. Valid for 5 minutes.`
+                message: `Hello!, Your NextByte Academy Sign-in OTP is: ${otp}.Please do NOT share your OTP with others!.`
             });
 
             console.log('SMS sent successfully:', response.data);

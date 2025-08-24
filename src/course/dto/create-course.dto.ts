@@ -67,6 +67,12 @@ export class CreateCourseDto {
     assignments?: Assignment[];
 
     @IsOptional()
+    @IsNumber()
+    @IsPositive()
+    @Type(() => Number)
+    totalModules?: number;
+
+    @IsOptional()
     @IsBoolean()
     isActive?: boolean;
 

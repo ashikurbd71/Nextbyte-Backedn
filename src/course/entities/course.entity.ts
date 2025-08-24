@@ -82,6 +82,8 @@ export class Course {
 
     @Column({ default: false })
     isPublished: boolean;
+    @Column({ type: 'int', default: 0 })
+    totalModules: number;
 
     @ManyToOne(() => Category, category => category.courses)
     category: Category;

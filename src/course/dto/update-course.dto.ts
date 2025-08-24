@@ -93,4 +93,11 @@ export class UpdateCourseDto {
     @IsPositive()
     @Type(() => Number)
     instructorId?: number;
+
+    @IsOptional()
+    @IsNumber()
+    @IsPositive()
+    @Type(() => Number)
+    totalModules?: number;
+
 }
